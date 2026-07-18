@@ -1,9 +1,11 @@
 const { expect } = require('@playwright/test');
 const PaymentPage = require('./PaymentPage');
+const { toAmount } = require('../../utils/amount');
 
-// Turns "Rs. 1,200" into 1200 so totals can be compared as numbers.
-const toAmount = (text) => Number(text.replace(/[^\d]/g, ''));
-
+/**
+ * The order review page: addresses, the amounts being charged, and placing the
+ * order.
+ */
 class CheckoutPage {
   constructor(page) {
     this.page = page;
@@ -11,7 +13,11 @@ class CheckoutPage {
     this.billingAddress = page.locator('#address_invoice');
     this.commentBox = page.locator('textarea.form-control');
     this.placeOrderLink = page.getByRole('link', { name: 'Place Order' });
-    // One cell per line item, then the grand total as the final cell.
+
+    /* Every amount on the order table, gathered together: one for each product,
+       followed by the grand total at the very end. The page gives the total no
+       marking of its own to set it apart, so its position at the end is the
+       only thing that identifies it. */
     this.amounts = page.locator('.cart_total_price');
   }
 
@@ -20,11 +26,18 @@ class CheckoutPage {
     await expect(this.deliveryAddress).toBeVisible();
   }
 
+  /**
+   * The amount charged for each product, as numbers. The last amount is left
+   * out because it is the grand total rather than a product.
+   */
   async lineTotals() {
     const all = await this.amounts.allInnerTexts();
     return all.slice(0, -1).map(toAmount);
   }
 
+  /**
+   * The overall total for the order, taken from the last amount on the table.
+   */
   async grandTotal() {
     const all = await this.amounts.allInnerTexts();
     return toAmount(all[all.length - 1]);

@@ -1,6 +1,9 @@
-// The "Add a new delivery address" form on the checkout page. Filling it and
-// clicking Deliver saves the address and reveals the payment section on the
-// same checkout page.
+/**
+ * The "Add a new delivery address" form inside checkout.
+ *
+ * Filling this in and choosing "Deliver to this address" saves the address and
+ * opens up the payment section further down the same checkout page.
+ */
 class AddressPage {
   constructor(page) {
     this.page = page;
@@ -11,7 +14,9 @@ class AddressPage {
     this.area = page.getByLabel('Area, Street, Sector, Village');
     this.landmark = page.getByLabel('Landmark');
     this.town = page.getByLabel('Town/City');
-    // Native <select> backing Amazon's custom dropdown; options are UPPERCASE.
+    /* The state dropdown on screen is a custom one Amazon built, but a plain
+       browser dropdown sits behind it holding the real list of states. Driving
+       that hidden one is far steadier than clicking through the fancy version. */
     this.stateSelect = page.locator('#address-ui-widgets-enterAddressStateOrRegion-dropdown-nativeId');
     this.deliverButton = page.getByRole('button', { name: 'Deliver to this address' });
   }
@@ -29,8 +34,13 @@ class AddressPage {
     await this.selectState(address.state);
   }
 
-  // Options render UPPERCASE ("KARNATAKA"); match the value case-insensitively
-  // so the address data can stay normally cased.
+  /**
+   * Picks a state from the dropdown by its name, for example "Karnataka".
+   *
+   * Amazon lists the states in capitals ("KARNATAKA"), so the name is matched
+   * without worrying about upper or lower case. That lets the test address data
+   * stay written the normal way instead of being shouted to suit the page.
+   */
   async selectState(stateName) {
     const value = await this.stateSelect
       .locator('option', { hasText: stateName })

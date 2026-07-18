@@ -1,7 +1,9 @@
 const { test } = require('../../../fixtures/fixtures');
 
-// Edge case: the happy path only ever adds a product once. Adding the same
-// product twice must update the existing line rather than create a second one.
+/* Why this exists on top of the main checkout test: that one adds a product
+   only once, so it never shows what happens when the same product is added
+   again. The cart is expected to raise the quantity on the line already there
+   rather than list the item twice. */
 test('merges a repeated add into one line item with quantity 2', async ({
   homePage,
   searchResultsPage,
@@ -10,8 +12,9 @@ test('merges a repeated add into one line item with quantity 2', async ({
 }) => {
   await homePage.open();
 
-  // Sign in first, then clear the cart: a stale item from a prior run would
-  // otherwise be merged in and throw the counts off.
+  /* Clearing has to come after signing in, since signing in brings the
+     account's saved cart along with it. Doing it the other way round would
+     leave old items behind and throw these counts off. */
   const signInPage = await homePage.goToSignIn();
   await signInPage.login(amazonUser);
   await cartPage.open();
@@ -26,12 +29,15 @@ test('merges a repeated add into one line item with quantity 2', async ({
   await productPage.addToCart();
   await productPage.expectCartCount(1);
 
-  // Adding leaves the product page, so go back before adding the same item again.
+  /* Adding took the browser away from the product, so it has to be opened again
+     before the very same item can be added a second time. */
   await productPage.reopen();
   const postAddCart = await productPage.addToCart();
   await postAddCart.expectCartCount(2);
 
-  // One line holding both units, rather than the item listed twice.
+  /* The heart of the test: one line in the cart, but two units on it. Both
+     checks together are what tell the two apart — a cart listing the item twice
+     would also hold two units, so counting units alone would not catch it. */
   await cartPage.open();
   await cartPage.expectLineItemCount(1);
   await cartPage.expectSubtotalItemCount(2);

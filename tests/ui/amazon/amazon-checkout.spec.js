@@ -1,8 +1,9 @@
 const { test, expect } = require('../../../fixtures/fixtures');
 
-// A throwaway address for the form. "Deliver to this address" saves it to the
-// account's address book; the test stops at the Place Order button without
-// clicking it, so no order is placed.
+/* A made-up address for the form. Worth knowing that saving it really does add
+   it to the account's address book, so these entries build up over time and are
+   worth tidying up now and then. Nothing is bought, though: the test stops once
+   the Place Order button is on screen and never clicks it. */
 const deliveryAddress = {
   fullName: 'Test Automation User',
   mobile: '9876543210',
@@ -22,8 +23,10 @@ test('signs in, adds a product, and reaches Place Order via cash on delivery', a
 }) => {
   await homePage.open();
 
-  // Sign in first, then clear the cart: a stale item from a prior run would
-  // otherwise merge in and divert checkout to the out-of-stock page.
+  /* The order of these two steps matters. Signing in pulls the account's saved
+     cart in alongside whatever is already there, so clearing has to come after
+     signing in. Clearing first would look tidy and achieve nothing, because the
+     old items would arrive straight afterwards. */
   const signInPage = await homePage.goToSignIn();
   await signInPage.login(amazonUser);
   await cartPage.open();
@@ -35,14 +38,17 @@ test('signs in, adds a product, and reaches Place Order via cash on delivery', a
   const productPage = await searchResultsPage.openFirstBuyableProduct();
   await productPage.expectLoaded();
 
-  // Captured at runtime: Amazon's prices move, so the check is that this figure
-  // survives into the cart, not that it equals any fixed amount.
+  /* Read the price as it stands right now rather than writing an expected
+     figure into the test. Amazon changes prices whenever it likes, so what is
+     being checked is that the price shown on the product carries through to the
+     cart unchanged, whatever that price happens to be today. */
   const unitPrice = await productPage.unitPrice();
 
   const postAddCart = await productPage.addToCart();
   await postAddCart.expectCartCount(1);
 
-  // Adding lands on an interstitial; open the cart itself to read the subtotal.
+  /* Adding leaves the browser on an in-between confirmation page, which does not
+     show the subtotal, so the cart proper has to be opened to read it. */
   await postAddCart.open();
   expect(await postAddCart.subtotal()).toBe(unitPrice);
 
@@ -53,7 +59,8 @@ test('signs in, adds a product, and reaches Place Order via cash on delivery', a
   await addressPage.fillAddress(deliveryAddress);
   await addressPage.deliverToThisAddress();
 
-  // Payment and review are sections of the same checkout page.
+  /* Still the same checkout page as before, which is why nothing is navigated
+     to here: payment and the final review are further sections of it. */
   await checkoutPage.selectCashOnDelivery();
   await checkoutPage.confirmPaymentMethod();
   await checkoutPage.expectPlaceOrderVisible();

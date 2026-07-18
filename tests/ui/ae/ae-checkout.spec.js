@@ -1,6 +1,7 @@
 const { test, expect } = require('../../../fixtures/fixtures');
 
-// Test card. The site accepts any well-formed values; nothing is really charged.
+/* A made-up card. This is a practice shopping site that accepts any details of
+   roughly the right shape, and no money ever changes hands. */
 const card = {
   name: 'Test Automation User',
   number: '4111111111111111',
@@ -26,7 +27,10 @@ test('places an order for two products and reaches the confirmation', async ({
   const checkoutPage = await aeCartPage.proceedToCheckout();
   await checkoutPage.expectReached();
 
-  // The order total should be exactly the sum of the line items.
+  /* Counting the lines matters as much as adding them up. If the products never
+     made it to the checkout, an empty list would add up to zero and sit happily
+     alongside a zero total, and the sum on its own would pass without having
+     proved anything. */
   const lineTotals = await checkoutPage.lineTotals();
   const grandTotal = await checkoutPage.grandTotal();
   expect(lineTotals).toHaveLength(2);

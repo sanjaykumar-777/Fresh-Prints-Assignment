@@ -6,9 +6,8 @@ module.exports = defineConfig({
   fullyParallel: false,
   forbidOnly: env.isCI,
   retries: env.isCI ? 2 : 0,
-  // Every test drives one real account whose cart lives on the server. Two
-  // tests clearing and filling that cart at once corrupt each other's counts,
-  // so the suite runs one test at a time.
+  /* One test at a time. They share a single real account, so two tests filling
+     and clearing the same cart at once would spoil each other's counts. */
   workers: 1,
 
   reporter: [
@@ -24,17 +23,19 @@ module.exports = defineConfig({
   },
 
   projects: [
-    // Amazon is a live third party (bot-check interstitial, occasional inline
-    // script races). The default UA is used deliberately: devices['Desktop Chrome']
-    // ships a pinned UA that makes amazon.in return net::ERR_INVALID_RESPONSE on search.
+    /* Amazon is a live site nobody here controls, so it can be slow and a
+       little unpredictable. The browser is left to describe itself normally:
+       borrowing one of the ready-made device profiles makes Amazon start
+       refusing searches. */
     {
       name: 'amazon',
       testDir: 'tests/ui/amazon',
-      // The whole flow — sign in, clear cart, search, add, address, payment,
-      // review — does not fit in the 30s default.
-      timeout: 180000,
-      // Amazon's payment section re-renders constantly, so the COD/continue
-      // steps stay somewhat non-deterministic. Retry to absorb that flakiness.
+
+      /* Eighty seconds, allowing for one test walking the whole journey: sign
+         in, clear the cart, search, add, address, payment and review. */
+      timeout: 80000,
+
+      /* Failures are not retried, so a flaky payment step will fail the run. */
       retries: 0,
       use: {
         baseURL: env.AMAZON_URL,
@@ -43,7 +44,7 @@ module.exports = defineConfig({
       },
     },
 
-    // AutomationExercise signs in once here and saves the session to disk.
+    /* Signs in once and saves the session, so the tests below start signed in. */
     {
       name: 'ae-setup',
       testDir: 'tests/setup',
@@ -60,7 +61,8 @@ module.exports = defineConfig({
       use: {
         baseURL: env.AE_URL,
         storageState: 'auth/ae-user.json',
-        // Also needed here: the signed-out specs log in explicitly.
+        /* Still needed even though the session is restored, because the
+           login-error test signs out and types the details itself. */
         aeUser: { email: env.AE_EMAIL, password: env.AE_PASSWORD },
       },
     },

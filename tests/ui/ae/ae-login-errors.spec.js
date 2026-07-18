@@ -1,6 +1,8 @@
 const { test } = require('../../../fixtures/fixtures');
 
-// Signed out, so the saved session does not skip the login being tested.
+/* Throws away the saved session so this test starts signed out. Every other
+   test here begins already signed in, which would defeat the whole point of
+   this one: there would be no login screen left to be refused at. */
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('rejects a login with the wrong password', async ({ aeLoginPage, aeUser }) => {

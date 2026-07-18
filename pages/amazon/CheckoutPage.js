@@ -1,9 +1,15 @@
 const { expect } = require('@playwright/test');
 const AddressPage = require('./AddressPage');
 
-// The single-page checkout reached after signing in. Address, payment and the
-// order review are all sections of this one page. The suite stops at confirming
-// Place Order is reachable — it never clicks it, so no real order is placed.
+/**
+ * The Amazon checkout, which is one long page rather than a series of separate
+ * ones: the delivery address, the payment choice and the final order review are
+ * all sections of it.
+ *
+ * These tests deliberately stop once the Place Order button is shown to be
+ * reachable. That button is never clicked, so no real order is ever placed and
+ * nothing is ever charged.
+ */
 class CheckoutPage {
   constructor(page) {
     this.page = page;
@@ -30,10 +36,15 @@ class CheckoutPage {
     await this.cashOnDelivery.click();
   }
 
-  // "Use this payment method" has to be clicked twice — two separate checkout
-  // steps, not a double click. The button is disabled until a payment method is
-  // selected, so waiting for it to enable is what confirms the previous step
-  // landed. After the second click the page re-renders into the order review.
+  /**
+   * Works through the payment step and leaves the page on the order review.
+   *
+   * The "Use this payment method" button genuinely has to be pressed twice.
+   * These are two different checkout steps that happen to share a button, not a
+   * double click. The button stays greyed out until the step before it has
+   * finished, so waiting for it to become clickable each time is what proves
+   * the previous step actually went through.
+   */
   async confirmPaymentMethod() {
     for (let step = 0; step < 2; step++) {
       await expect(this.usePaymentMethodButton).toBeEnabled({ timeout: 30000 });

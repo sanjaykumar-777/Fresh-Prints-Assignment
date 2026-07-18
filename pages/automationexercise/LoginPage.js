@@ -1,5 +1,13 @@
 const { expect } = require('@playwright/test');
 
+/**
+ * The sign-in screen.
+ *
+ * Used in two quite different ways: the one-off setup step signs in here and
+ * saves the session so the other tests begin already signed in, while the
+ * login-error test comes here deliberately signed out to check a wrong password
+ * is refused.
+ */
 class LoginPage {
   constructor(page) {
     this.page = page;

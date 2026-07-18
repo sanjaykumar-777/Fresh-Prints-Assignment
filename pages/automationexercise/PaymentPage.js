@@ -1,7 +1,12 @@
 const { expect } = require('@playwright/test');
 
-// Paying redirects straight to /payment_done, which has nothing to interact
-// with beyond the confirmation, so this page object covers both screens.
+/**
+ * The card payment form and the order confirmation that follows it.
+ *
+ * Paying sends the browser straight to the confirmation screen, and that screen
+ * holds nothing to interact with beyond the confirmation message itself, so one
+ * page object covers both rather than splitting off a near-empty second one.
+ */
 class PaymentPage {
   constructor(page) {
     this.page = page;
@@ -21,6 +26,12 @@ class PaymentPage {
     await expect(this.payButton).toBeVisible();
   }
 
+  /**
+   * Fills in the card details and submits the payment.
+   *
+   * This is a practice shopping site, so the card details are made-up ones and
+   * no money ever changes hands.
+   */
   async pay(card) {
     await this.nameOnCard.fill(card.name);
     await this.cardNumber.fill(card.number);
@@ -35,7 +46,12 @@ class PaymentPage {
     await expect(this.downloadInvoiceLink).toBeVisible();
   }
 
-  // The confirmation URL carries the amount charged, e.g. /payment_done/900.
+  /**
+   * Checks the amount actually charged matches what the cart said it would be.
+   *
+   * The site puts that figure in the web address of the confirmation page, as
+   * in "/payment_done/900", so the address is where it can be read back from.
+   */
   async expectChargedAmount(amount) {
     await expect(this.page).toHaveURL(new RegExp(`/payment_done/${amount}\\b`));
   }
