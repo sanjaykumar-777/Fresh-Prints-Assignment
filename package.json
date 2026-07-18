@@ -1,0 +1,22 @@
+{
+  "name": "fresh-prints-assignment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:amazon": "playwright test --project=amazon",
+    "test:ae": "playwright test --project=ae",
+    "test:ae:headed": "playwright test --project=ae --headed",
+    "report:html": "playwright show-report reports/html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@faker-js/faker": "^10.5.0",
+    "@playwright/test": "^1.61.1",
+    "dotenv": "^17.4.2"
+  }
+}

@@ -1,0 +1,11 @@
+node_modules/
+auth/
+reports/
+test-results/
+playwright-report/
+
+environments/*
+!environments/.env.example
+
+# Assignment 2 deliverable, kept out of the code repo.
+bug-reports/
