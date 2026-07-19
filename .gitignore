@@ -9,3 +9,6 @@ environments/*
 
 # Assignment 2 deliverable, kept out of the code repo.
 bug-reports/
+
+# IDE settings, specific to one machine.
+.idea/

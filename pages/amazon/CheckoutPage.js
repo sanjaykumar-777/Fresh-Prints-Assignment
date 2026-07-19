@@ -14,6 +14,10 @@ class CheckoutPage {
   constructor(page) {
     this.page = page;
     this.addNewAddressLink = page.getByRole('link', { name: 'Add a new delivery address' });
+
+    /* Used to spot that the address form is already up, so the step is not left
+       waiting on a link that is not going to appear. */
+    this.addressFormNameField = page.getByLabel('Full name (First and Last name)');
     this.cashOnDelivery = page.getByRole('radio', {
       name: 'Cash on Delivery/Pay on Delivery',
       checked: false,
@@ -26,9 +30,24 @@ class CheckoutPage {
     await expect(this.page).toHaveURL(/\/checkout\//, { timeout: 30000 });
   }
 
+  /**
+   * Gets to the new-address form, whichever way Amazon has laid the step out.
+   *
+   * The link was there on both the accounts tried, with and without addresses
+   * saved, so ordinarily this just clicks it. Amazon does vary this step by
+   * account though, so rather than wait on the link alone this settles for
+   * either the link or the form itself, and skips the click if the form is
+   * already up.
+   */
   async addNewAddress() {
-    await expect(this.addNewAddressLink).toBeVisible({ timeout: 30000 });
-    await this.addNewAddressLink.click();
+    await expect(
+      this.addNewAddressLink.or(this.addressFormNameField).first()
+    ).toBeVisible({ timeout: 30000 });
+
+    if (await this.addNewAddressLink.isVisible()) {
+      await this.addNewAddressLink.click();
+    }
+
     return new AddressPage(this.page);
   }
 

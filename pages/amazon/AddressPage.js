@@ -1,3 +1,5 @@
+const { expect } = require('@playwright/test');
+
 /**
  * The "Add a new delivery address" form inside checkout.
  *
@@ -18,7 +20,19 @@ class AddressPage {
        browser dropdown sits behind it holding the real list of states. Driving
        that hidden one is far steadier than clicking through the fancy version. */
     this.stateSelect = page.locator('#address-ui-widgets-enterAddressStateOrRegion-dropdown-nativeId');
-    this.deliverButton = page.getByRole('button', { name: 'Deliver to this address' });
+    /* Two wordings because the form differs by account: "Deliver to this
+       address" when one is already saved, "Use this address" in the pop-up
+       shown when the address book is empty. */
+    this.deliverButton = page.getByRole('button', {
+      name: /deliver to this address|use this address/i,
+    });
+
+    /* Matched by the pincode field's own alert box rather than the wording:
+       Amazon builds every error message into the page up front and keeps them
+       hidden, so matching the text finds a hidden copy first. */
+    this.pincodeError = page.locator(
+      '#address-ui-widgets-enterAddressPostalCode-full-validation-alerts'
+    );
   }
 
   async fillAddress(address) {
@@ -51,6 +65,23 @@ class AddressPage {
 
   async deliverToThisAddress() {
     await this.deliverButton.click();
+  }
+
+  /**
+   * Checks that a badly formed pincode was turned away.
+   *
+   * The message on its own is not enough. A form can show a complaint and still
+   * let the shopper through, which would be the worse fault of the two, so this
+   * also confirms the browser is still sitting on the address step with the
+   * form up. Getting past here would mean a parcel addressed to a pincode that
+   * cannot exist.
+   */
+  async expectPincodeRejected() {
+    await expect(this.pincodeError).toBeVisible({ timeout: 30000 });
+    await expect(this.pincodeError).toContainText(/valid ZIP or postal code/i);
+
+    await expect(this.deliverButton).toBeVisible();
+    await expect(this.page).toHaveURL(/\/address/);
   }
 }
 
