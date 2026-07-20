@@ -71,6 +71,27 @@ two, four and two.
 
 ---
 
+## Assignment 2 — Exploratory testing
+
+A separate exercise from the suite above: an exploratory session against the **Fresh Prints
+Design Tool** (`design-tool.freshprints.com`). Four issues came out of it.
+
+| # | Issue | Type |
+| --- | --- | --- |
+| 1 | The first message typed into the help chat silently becomes the design's title | Functional |
+| 2 | Sorting the product list by price shows no prices to compare | UX |
+| 3 | A selected design can only be removed with the Delete key; nothing on screen says so | UX |
+| 4 | Some images in the Print Type Guide never load | Functional |
+
+**The full write-ups are in [`exploratory-issues.pdf`](exploratory-issues.pdf)** — each issue
+with steps to reproduce, expected versus actual behaviour, a screenshot, a hypothesis about
+the root cause, and how the fix would be verified.
+
+Nothing in this section affects the test suite; the design tool is a different product and
+has no tests here.
+
+---
+
 ## Architecture
 
 ```
