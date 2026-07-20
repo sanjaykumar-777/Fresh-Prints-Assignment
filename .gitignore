@@ -12,3 +12,6 @@ bug-reports/
 
 # IDE settings, specific to one machine.
 .idea/
+
+# Reference material, not part of the deliverable.
+ARCHITECTURE.md

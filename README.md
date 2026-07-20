@@ -75,6 +75,7 @@ two, four and two.
 
 ```
 ├── playwright.config.js       # the only place Playwright is configured
+├── global-teardown.js         # deletes the saved session once the run ends
 │
 ├── config/
 │   └── env.js                 # the only place process.env is read
@@ -132,7 +133,7 @@ two, four and two.
 None of the three generated folders are in the repository, and none need creating by
 hand — the first run makes them. `auth/ae-user.json` in particular is written by the
 `ae-setup` project, which is a declared dependency of the `ae` project and so always runs
-first.
+first, and is deleted again by `global-teardown.js` once the run ends.
 
 ### The layers
 
@@ -195,6 +196,12 @@ time.
 project and saves the session to `auth/`, so its tests start already signed in. Amazon
 signs in within each test instead: its cart is tied to the account and every Amazon test
 needs to control the cart from a known state anyway.
+
+**The saved session does not outlive the run.** `auth/ae-user.json` holds a real signed-in
+session for the shared account, so a global teardown deletes it once everything has
+finished. Leaving it on disk is both a small secret sitting around between runs and a stale
+one — the next run would start from a session that may already have expired, rather than
+signing in fresh.
 
 **The cart is emptied at the start of each test, after signing in.** Signing in merges the
 account's saved cart back in, so clearing first would look tidy and achieve nothing.

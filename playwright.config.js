@@ -3,6 +3,7 @@ const env = require('./config/env');
 
 module.exports = defineConfig({
   testDir: 'tests',
+  globalTeardown: require.resolve('./global-teardown'),
   fullyParallel: false,
   forbidOnly: env.isCI,
   retries: env.isCI ? 2 : 0,
